@@ -1,10 +1,17 @@
+
 from fastapi import FastAPI, Request
 import requests
 import os
 
-print("WHATSAPP BOT STARTED")
-
 app = FastAPI()
+
+@app.middleware("http")
+async def log_all_requests(request: Request, call_next):
+    print(f"REQUEST: {request.method} {request.url.path}")
+    response = await call_next(request)
+    return response
+
+print("WHATSAPP BOT STARTED")
 
 VERIFY_TOKEN = "anmol_bot_2026"
 
