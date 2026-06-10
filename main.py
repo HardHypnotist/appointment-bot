@@ -59,6 +59,7 @@ async def verify(request: Request):
 
 @app.post("/webhook")
 async def webhook(request: Request):
+    print("WEBHOOK HIT")
     data = await request.json()
 
     print("FULL PAYLOAD:")
