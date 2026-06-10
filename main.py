@@ -2,6 +2,8 @@ from fastapi import FastAPI, Request
 import requests
 import os
 
+print("WHATSAPP BOT STARTED")
+
 app = FastAPI()
 
 VERIFY_TOKEN = "anmol_bot_2026"
@@ -9,8 +11,13 @@ VERIFY_TOKEN = "anmol_bot_2026"
 WHATSAPP_TOKEN = os.getenv("WHATSAPP_TOKEN")
 PHONE_NUMBER_ID = os.getenv("PHONE_NUMBER_ID")
 
+print("TOKEN EXISTS:", bool(WHATSAPP_TOKEN))
+print("PHONE ID EXISTS:", bool(PHONE_NUMBER_ID))
+
 
 def send_whatsapp_message(to_number, message):
+    print("Sending message to:", to_number)
+
     url = f"https://graph.facebook.com/v23.0/{PHONE_NUMBER_ID}/messages"
 
     headers = {
@@ -28,8 +35,9 @@ def send_whatsapp_message(to_number, message):
     }
 
     response = requests.post(url, headers=headers, json=payload)
-    print(response.status_code)
-    print(response.text)
+
+    print("Status Code:", response.status_code)
+    print("Response:", response.text)
 
 
 @app.get("/")
@@ -53,6 +61,9 @@ async def verify(request: Request):
 async def webhook(request: Request):
     data = await request.json()
 
+    print("FULL PAYLOAD:")
+    print(data)
+
     try:
         entry = data["entry"][0]
         changes = entry["changes"][0]
@@ -62,12 +73,17 @@ async def webhook(request: Request):
             message = value["messages"][0]
             sender = message["from"]
 
+            print("MESSAGE RECEIVED FROM:", sender)
+
             send_whatsapp_message(
                 sender,
                 "Hello!\n\nBook your appointment here:\nhttps://your-booking-link.com"
             )
 
+        else:
+            print("No messages field found")
+
     except Exception as e:
-        print("Error:", e)
+        print("ERROR:", str(e))
 
     return {"status": "received"}
