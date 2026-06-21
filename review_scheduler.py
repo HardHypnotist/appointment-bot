@@ -104,6 +104,7 @@ If you have a moment, we'd greatly appreciate your feedback:
 {REVIEW_LINK}
 
 Thank you for your support.
+To stop receiving follow-up messages, reply STOP.
 """
 
     send_whatsapp_message(phone, message)
