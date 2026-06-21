@@ -106,8 +106,33 @@ async def webhook(request: Request):
 
             message = value["messages"][0]
             sender = message["from"]
+            message_text = message.get("text", {}).get("body", "").strip().upper()
 
             print("MESSAGE RECEIVED FROM:", sender)
+
+            if message_text in ["STOP", "REMOVE", "UNSUBSCRIBE"]:
+
+                conn = psycopg2.connect(DATABASE_URL)
+                cursor = conn.cursor()
+
+                cursor.execute(
+                    """
+                    UPDATE patients
+                    SET opted_out = TRUE
+                    WHERE phone = %s
+                    """,
+                    (sender,)
+                )
+
+                conn.commit()
+                conn.close()
+
+                send_whatsapp_message(
+                    sender,
+                    "You have been removed from future follow-up messages."
+                )
+
+                return {"status": "opted_out"}
 
             # Check database
             conn = psycopg2.connect(DATABASE_URL)
