@@ -138,13 +138,19 @@ async def webhook(request: Request):
 
                 conn.commit()
 
+                
                 send_whatsapp_message(
                     sender,
-                    "Hello!\n\nBook your appointment here:\nhttps://your-booking-link.com"
+                    "Welcome to Heartline.\n\n"
+                    "Thank you for contacting us. To book your appointment, please use the link below:\n\n"
+                    "https://hplix.in/HP4304\n\n"
+                    "We look forward to serving you.\n\n"
+                    "Team Heartline"
                 )
 
             else:
                 print("EXISTING PATIENT")
+
 
             conn.close()
 
