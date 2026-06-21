@@ -1,4 +1,5 @@
-
+import sqlite3
+from datetime import datetime
 from fastapi import FastAPI, Request
 import requests
 import os
@@ -78,10 +79,27 @@ async def webhook(request: Request):
         value = changes["value"]
 
         if "messages" in value:
+
             message = value["messages"][0]
             sender = message["from"]
 
             print("MESSAGE RECEIVED FROM:", sender)
+
+            # Check database
+            conn = sqlite3.connect("patients.db")
+            cursor = conn.cursor()
+
+            cursor.execute(
+                "SELECT phone FROM patients WHERE phone=?",
+                (sender,)
+            )
+
+            existing = cursor.fetchone()
+
+            if not existing:
+                print("NEW PATIENT")
+
+            conn.close()
 
             send_whatsapp_message(
                 sender,
