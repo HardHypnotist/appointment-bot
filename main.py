@@ -138,12 +138,15 @@ async def webhook(request: Request):
 
                 conn.commit()
 
-            conn.close()
+                send_whatsapp_message(
+                    sender,
+                    "Hello!\n\nBook your appointment here:\nhttps://your-booking-link.com"
+                )
 
-            send_whatsapp_message(
-                sender,
-                "Hello!\n\nBook your appointment here:\nhttps://your-booking-link.com"
-            )
+            else:
+                print("EXISTING PATIENT")
+
+            conn.close()
 
         else:
             print("No messages field found")
