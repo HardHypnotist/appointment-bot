@@ -109,7 +109,7 @@ async def webhook(request: Request):
 
             print("MESSAGE RECEIVED FROM:", sender)
 
-           # Check database
+            # Check database
             conn = psycopg2.connect(DATABASE_URL)
             cursor = conn.cursor()
 
@@ -138,7 +138,7 @@ async def webhook(request: Request):
 
                 conn.commit()
 
-conn.close()
+            conn.close()
 
             send_whatsapp_message(
                 sender,
