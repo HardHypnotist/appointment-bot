@@ -1,8 +1,8 @@
-import sqlite3
-from datetime import datetime
 from fastapi import FastAPI, Request
 import requests
 import os
+import psycopg2
+from datetime import datetime
 
 app = FastAPI()
 
@@ -18,9 +18,33 @@ VERIFY_TOKEN = "anmol_bot_2026"
 
 WHATSAPP_TOKEN = os.getenv("WHATSAPP_TOKEN")
 PHONE_NUMBER_ID = os.getenv("PHONE_NUMBER_ID")
+DATABASE_URL = os.getenv("DATABASE_URL")
 
 print("TOKEN EXISTS:", bool(WHATSAPP_TOKEN))
 print("PHONE ID EXISTS:", bool(PHONE_NUMBER_ID))
+print("DATABASE EXISTS:", bool(DATABASE_URL))
+try:
+    conn = psycopg2.connect(DATABASE_URL)
+    cursor = conn.cursor()
+
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS patients (
+        phone TEXT PRIMARY KEY,
+        created_at TIMESTAMP,
+        first_contact_time TIMESTAMP,
+        review_sent BOOLEAN DEFAULT FALSE,
+        reminder_sent BOOLEAN DEFAULT FALSE
+    )
+    """)
+
+    conn.commit()
+
+    print("POSTGRES TABLE READY")
+
+    conn.close()
+
+except Exception as e:
+    print("POSTGRES ERROR:", str(e))
 
 
 def send_whatsapp_message(to_number, message):
@@ -85,12 +109,12 @@ async def webhook(request: Request):
 
             print("MESSAGE RECEIVED FROM:", sender)
 
-            # Check database
-            conn = sqlite3.connect("patients.db")
+           # Check database
+            conn = psycopg2.connect(DATABASE_URL)
             cursor = conn.cursor()
 
             cursor.execute(
-                "SELECT phone FROM patients WHERE phone=?",
+                "SELECT phone FROM patients WHERE phone=%s",
                 (sender,)
             )
 
@@ -99,7 +123,22 @@ async def webhook(request: Request):
             if not existing:
                 print("NEW PATIENT")
 
-            conn.close()
+                cursor.execute(
+                    """
+                    INSERT INTO patients
+                    (
+                        phone,
+                        created_at,
+                        first_contact_time
+                    )
+                    VALUES (%s, NOW(), NOW())
+                    """,
+                    (sender,)
+                )
+
+                conn.commit()
+
+conn.close()
 
             send_whatsapp_message(
                 sender,
