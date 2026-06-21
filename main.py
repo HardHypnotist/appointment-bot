@@ -106,6 +106,9 @@ async def webhook(request: Request):
 
             message = value["messages"][0]
             sender = message["from"]
+            name = value["contacts"][0]["profile"]["name"]
+
+            print("NAME:", name)
             message_text = message.get("text", {}).get("body", "").strip().upper()
 
             print("MESSAGE RECEIVED FROM:", sender)
@@ -153,12 +156,13 @@ async def webhook(request: Request):
                     INSERT INTO patients
                     (
                         phone,
+                        name,
                         created_at,
                         first_contact_time
                     )
-                    VALUES (%s, NOW(), NOW())
+                    VALUES (%s, %s, NOW(), NOW())
                     """,
-                    (sender,)
+                    (sender, name)
                 )
 
                 conn.commit()
